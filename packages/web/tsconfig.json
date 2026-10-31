@@ -1,7 +1,12 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "@tsconfig/bun/tsconfig.json",
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
   "compilerOptions": {
-    "types": ["bun"]
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }
