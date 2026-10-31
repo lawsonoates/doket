@@ -1,18 +1,12 @@
 ---
 import Layout from "@/layouts/main.astro"
-import { Button } from "@/components/ui/button"
 ---
 
 <Layout>
-  <div class="flex min-h-svh p-6">
-    <div class="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-      <img src="/brand/doket-lockup.svg" alt="Doket" class="h-8 w-auto" />
-      <div>
-        <h1 class="font-medium">Project ready!</h1>
-        <p>You may now add components and start building.</p>
-        <p>We've already added the button component for you.</p>
-        <Button client:load className="mt-2">Button</Button>
-      </div>
+  <main class="grid min-h-svh place-items-center p-6">
+    <div class="flex flex-col items-center gap-5">
+      <img src="/brand/doket-lockup.svg" alt="Doket" class="w-44" />
+      <p class="font-mono text-sm text-muted-foreground">Coming soon</p>
     </div>
-  </div>
+  </main>
 </Layout>
