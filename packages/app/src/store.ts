@@ -4,14 +4,14 @@ import type { PlatformError } from "effect/PlatformError";
 export const Issue = Schema.String.check(
   Schema.isPattern(/^[A-Z][A-Z0-9]*-[1-9][0-9]*$/u, {
     message: "Use a Linear issue ID such as ENG-123",
-  })
+  }),
 ).pipe(Schema.brand("Issue"));
 export type Issue = typeof Issue.Type;
 
 export const Name = Schema.String.check(
   Schema.isPattern(/^(?!\.{1,2}$)[^/\\\p{Cc}]+$/u, {
     message: "Use a filename without directories or control characters",
-  })
+  }),
 ).pipe(Schema.brand("Name"));
 export type Name = typeof Name.Type;
 
@@ -64,7 +64,7 @@ export interface Interface {
 }
 
 export class Service extends Context.Service<Service, Interface>()(
-  "docket/Store"
+  "docket/Store",
 ) {}
 
 const failure =
@@ -74,7 +74,7 @@ const failure =
       Effect.catchReasons("PlatformError", {
         AlreadyExists: () => Effect.fail(new Exists({ path })),
         NotFound: () => Effect.fail(new Missing({ path })),
-      })
+      }),
     );
 
 export const layer = (root: string) =>
@@ -90,7 +90,7 @@ export const layer = (root: string) =>
 
       const directory = Effect.fn("Store.directory")(function* (
         issue: Issue,
-        create = false
+        create = false,
       ) {
         if (create) {
           yield* fs.makeDirectory(home, { recursive: true });
@@ -120,8 +120,8 @@ export const layer = (root: string) =>
               Effect.catchTags({
                 Invalid: () => Effect.succeed([]),
                 Missing: () => Effect.succeed([]),
-              })
-            )
+              }),
+            ),
         )).flat();
       });
 
@@ -137,7 +137,7 @@ export const layer = (root: string) =>
             }
             const info = yield* fs.stat(file).pipe(failure(file));
             return info.type === "File" ? [{ issue, name, path: file }] : [];
-          }).pipe(Effect.catchTag("Missing", () => Effect.succeed([])))
+          }).pipe(Effect.catchTag("Missing", () => Effect.succeed([]))),
         )).flat();
       });
 
@@ -145,11 +145,11 @@ export const layer = (root: string) =>
         add: Effect.fn("Store.add")(function* (input) {
           const source = path.resolve(input.source);
           const name = yield* Schema.decodeUnknownEffect(Name)(
-            path.basename(source)
+            path.basename(source),
           ).pipe(
             Effect.mapError(
-              () => new Invalid({ message: `Invalid filename: ${source}` })
-            )
+              () => new Invalid({ message: `Invalid filename: ${source}` }),
+            ),
           );
           const info = yield* fs.stat(source).pipe(failure(source));
           if (info.type !== "File") {
@@ -170,7 +170,7 @@ export const layer = (root: string) =>
               // A hard link publishes the complete copy and fails if the name is taken.
               yield* fs.link(copy, file).pipe(failure(file));
               return file;
-            })
+            }),
           );
         }),
         create: Effect.fn("Store.create")(function* (input) {
@@ -200,5 +200,5 @@ export const layer = (root: string) =>
           return file;
         }),
       });
-    })
+    }),
   );

@@ -21,10 +21,10 @@ const storage = Layer.unwrap(
   Effect.gen(function* () {
     const path = yield* Path.Path;
     const root = yield* Config.String("ISSUE_HOME").pipe(
-      Config.withDefault(path.join(homedir(), "Documents", "issue-files"))
+      Config.withDefault(path.join(homedir(), "Documents", "issue-files")),
     );
     return search(root).pipe(Layer.provideMerge(layer(root)));
-  })
+  }),
 );
 
 Effect.gen(function* () {
@@ -35,7 +35,7 @@ Effect.gen(function* () {
     version: manifest.version,
   }).pipe(
     Effect.catchTag("ShowHelp", (err) =>
-      err.errors.length === 0 ? Effect.void : Effect.fail(err)
+      err.errors.length === 0 ? Effect.void : Effect.fail(err),
     ),
     Effect.provideService(Console.Console, {
       ...terminal,
@@ -52,9 +52,9 @@ Effect.gen(function* () {
               terminal.error(...args);
             }
           }),
-        { discard: true }
-      )
-    )
+        { discard: true },
+      ),
+    ),
   );
 }).pipe(
   Effect.provide(storage),
@@ -70,8 +70,8 @@ Effect.gen(function* () {
       return Effect.void;
     }
     return Console.error(
-      Option.isSome(err) ? `docket: ${err.value.message}` : Cause.pretty(cause)
+      Option.isSome(err) ? `docket: ${err.value.message}` : Cause.pretty(cause),
     );
   }),
-  BunRuntime.runMain
+  BunRuntime.runMain,
 );

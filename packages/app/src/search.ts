@@ -12,7 +12,7 @@ const size = 256;
 export const Query = Schema.NonEmptyString.check(
   Schema.isPattern(/^[^\r\n]+$/u, {
     message: "Use a single-line search query",
-  })
+  }),
 ).pipe(Schema.brand("Query"));
 export type Query = typeof Query.Type;
 
@@ -38,7 +38,7 @@ export interface Interface {
 }
 
 export class Search extends Context.Service<Search, Interface>()(
-  "docket/Search"
+  "docket/Search",
 ) {}
 
 const attempt = <A>(run: () => Result<A> | Promise<Result<A>>) =>
@@ -52,8 +52,8 @@ const attempt = <A>(run: () => Result<A> | Promise<Result<A>>) =>
     Effect.flatMap((result) =>
       result.ok
         ? Effect.succeed(result.value)
-        : Effect.fail(new Failure({ message: `fff: ${result.error}` }))
-    )
+        : Effect.fail(new Failure({ message: `fff: ${result.error}` })),
+    ),
   );
 
 export const layer = (root: string) =>
@@ -76,7 +76,7 @@ export const layer = (root: string) =>
                   },
                 ];
           const files = (yield* Effect.forEach(dirs, (dir) =>
-            store.list(dir.issue)
+            store.list(dir.issue),
           )).flat();
           if (files.length === 0) {
             return [];
@@ -97,9 +97,9 @@ export const layer = (root: string) =>
                     basePath: base,
                     disableMmapCache: true,
                     disableWatch: true,
-                  })
+                  }),
                 ),
-                (resource) => Effect.sync(() => resource.destroy())
+                (resource) => Effect.sync(() => resource.destroy()),
               );
               const ready = yield* attempt(() => finder.waitForScan(10_000));
               if (!ready) {
@@ -116,17 +116,17 @@ export const layer = (root: string) =>
                     // fff 0.11.0 names this pageIndex, but its native API expects a result offset.
                     pageIndex: offset,
                     pageSize: size,
-                  })
+                  }),
                 );
                 matches.push(
                   ...batch.items.flatMap((hit) => {
                     const file = allowed.get(
-                      path.resolve(base, hit.relativePath)
+                      path.resolve(base, hit.relativePath),
                     );
                     return file === undefined
                       ? []
                       : [{ ...file, kind: "name" } satisfies Match];
-                  })
+                  }),
                 );
                 offset += batch.items.length;
                 if (batch.items.length === 0 || offset >= batch.totalMatched) {
@@ -144,12 +144,12 @@ export const layer = (root: string) =>
                     pageSize: size,
                     patterns: [query],
                     smartCase: true,
-                  })
+                  }),
                 );
                 matches.push(
                   ...batch.items.flatMap((hit) => {
                     const file = allowed.get(
-                      path.resolve(base, hit.relativePath)
+                      path.resolve(base, hit.relativePath),
                     );
                     return file === undefined
                       ? []
@@ -161,7 +161,7 @@ export const layer = (root: string) =>
                             text: hit.lineContent,
                           } satisfies Match,
                         ];
-                  })
+                  }),
                 );
                 cursor = batch.nextCursor;
               } while (cursor !== null);
@@ -170,11 +170,11 @@ export const layer = (root: string) =>
                 (a, b) =>
                   a.path.localeCompare(b.path) ||
                   (a.kind === "name" ? 0 : a.line) -
-                    (b.kind === "name" ? 0 : b.line)
+                    (b.kind === "name" ? 0 : b.line),
               );
-            })
+            }),
           );
         }),
       });
-    })
+    }),
   );
