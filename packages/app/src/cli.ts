@@ -119,7 +119,7 @@ const search = Command.make(
   Command.withDescription("Search fuzzy filenames and literal text with fff"),
 );
 
-export const command = Command.make("docket").pipe(
+export const command = Command.make("doket").pipe(
   Command.withDescription("Keep the files for each Linear issue together"),
   Command.withSubcommands([create, add, list, path, search]),
 );

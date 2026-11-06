@@ -70,7 +70,7 @@ Effect.gen(function* () {
       return Effect.void;
     }
     return Console.error(
-      Option.isSome(err) ? `docket: ${err.value.message}` : Cause.pretty(cause),
+      Option.isSome(err) ? `doket: ${err.value.message}` : Cause.pretty(cause),
     );
   }),
   BunRuntime.runMain,

@@ -38,7 +38,7 @@ export interface Interface {
 }
 
 export class Search extends Context.Service<Search, Interface>()(
-  "docket/Search",
+  "doket/Search",
 ) {}
 
 const attempt = <A>(run: () => Result<A> | Promise<Result<A>>) =>

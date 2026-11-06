@@ -64,7 +64,7 @@ export interface Interface {
 }
 
 export class Service extends Context.Service<Service, Interface>()(
-  "docket/Store",
+  "doket/Store",
 ) {}
 
 const failure =
@@ -163,7 +163,7 @@ export const layer = (root: string) =>
             Effect.gen(function* () {
               const stage = yield* fs.makeTempDirectoryScoped({
                 directory: path.dirname(dir),
-                prefix: ".docket-",
+                prefix: ".doket-",
               });
               const copy = path.join(stage, name);
               yield* fs.copyFile(source, copy);
