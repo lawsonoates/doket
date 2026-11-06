@@ -1,12 +1,34 @@
 ---
 import Layout from "@/layouts/main.astro"
+import { siGithub } from "simple-icons"
 import { Sorter } from "@/components/sorter"
+import { buttonVariants } from "@/components/ui/button"
 ---
 
 <Layout>
-  <main class="flex min-h-svh flex-col items-center justify-center gap-10 px-6 py-16">
-    <img src="/brand/doket-lockup.svg" alt="Doket" class="w-36" />
-    <Sorter client:visible />
-    <p class="font-mono text-sm text-muted-foreground">Coming soon</p>
+  <main class="relative h-svh overflow-hidden">
+    <a
+      href="https://github.com/lawsonoates/doket"
+      aria-label="Doket on GitHub"
+      class={buttonVariants({
+        variant: "ghost",
+        size: "icon-lg",
+        className: "absolute top-3 right-3 z-10 size-10 text-muted-foreground",
+      })}
+    >
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="size-5">
+        <path d={siGithub.path} />
+      </svg>
+    </a>
+    <Sorter client:visible>
+      <img src="/brand/doket-lockup.svg" alt="Doket" class="w-28 short:w-20" />
+      <h1 class="mt-4 text-3xl text-balance wide:mt-6 wide:text-4xl wide:lg:text-5xl short:mt-2 short:text-2xl">
+        Every file, filed under its issue.
+      </h1>
+      <p class="mt-2 text-sm text-pretty text-muted-foreground wide:mt-4 wide:text-base short:mt-1 short:text-xs">
+        Logs, patches and screenshots pile up while you work. Doket lets your
+        agent file each one under the Linear issue it belongs to.
+      </p>
+    </Sorter>
   </main>
 </Layout>

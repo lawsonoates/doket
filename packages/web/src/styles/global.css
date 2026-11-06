@@ -11,6 +11,10 @@
 /* Applies shadcn's dark: utilities everywhere, since the palette is always dark. */
 @custom-variant dark (&:where(:root, :root *));
 
+/* Height is what runs out on landscape screens, so the hero splits into two columns there. */
+@custom-variant wide (@media (min-width: 40rem) and (min-aspect-ratio: 1/1));
+@custom-variant short (@media (max-height: 32rem));
+
 :root {
   color-scheme: dark;
   --radius: 0.75rem;

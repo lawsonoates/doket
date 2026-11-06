@@ -1,5 +1,11 @@
 import { Shuffle, Volume2, VolumeX, WandSparkles } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import { Button } from "@/components/ui/button";
 
 // The stage is drawn at a fixed size and scaled to fit, so every number below is in stage pixels.
@@ -224,7 +230,8 @@ function blip(ctx: AudioContext, step: number, down: boolean) {
 const notes = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
 const key = "doket-sound-off";
 
-export function Sorter() {
+export function Sorter({ children }: { children?: ReactNode }) {
+  const room = useRef<HTMLDivElement>(null);
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const run = useRef<{ mode: Mode; at: number }>({ mode: "mess", at: 0 });
@@ -232,17 +239,19 @@ export function Sorter() {
   const audio = useRef<AudioContext | null>(null);
   const quiet = useRef(false);
   const [phase, setPhase] = useState<Mode>("mess");
-  const [done, setDone] = useState(0);
   const [scale, setScale] = useState(0);
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     quiet.current = localStorage.getItem(key) === "1";
     setMuted(quiet.current);
-    const el = outer.current;
+    const el = room.current;
     if (!el) return;
     const obs = new ResizeObserver(([entry]) => {
-      if (entry) setScale(entry.contentRect.width / W);
+      if (entry)
+        setScale(
+          Math.min(entry.contentRect.width / W, entry.contentRect.height / H),
+        );
     });
     obs.observe(el);
     return () => obs.disconnect();
@@ -352,7 +361,6 @@ export function Sorter() {
           if (mode === "reset" && n < tallied) blip(ctx, notes[n] ?? 0, true);
         }
         tallied = n;
-        setDone(n);
       }
     };
 
@@ -400,203 +408,178 @@ export function Sorter() {
   };
 
   const busy = phase === "sort" || phase === "reset";
-  const log =
-    phase === "mess"
-      ? [{ text: "# 10 loose files, no folders. Good luck.", tone: "dim" }]
-      : phase === "reset"
-        ? [{ text: "# undoing all that hard work…", tone: "dim" }]
-        : [
-            ...(done === 0
-              ? [{ text: "# reading 10 files…", tone: "dim" }]
-              : []),
-            ...files.slice(0, done).map((f) => ({
-              text: `doket add ${f.issue.id} ${f.name}`,
-              tone: "cmd",
-            })),
-            ...(phase === "sorted"
-              ? [{ text: "✓ 10 files filed under 3 issues", tone: "ok" }]
-              : []),
-          ].slice(-4);
 
   return (
-    <div className="flex w-full max-w-[880px] flex-col items-center gap-8">
+    <div className="mx-auto grid h-full w-full max-w-[1440px] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 p-4 sm:p-6 wide:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] wide:grid-rows-[minmax(0,1fr)_auto_auto_minmax(0,1fr)] wide:gap-x-10 wide:gap-y-6 wide:px-10 short:gap-y-2 short:py-3">
+      <div className="wide:col-start-1 wide:row-start-2">{children}</div>
       <div
-        ref={outer}
-        role="img"
-        aria-label="Ten loose files fly into three folders, one for each Linear issue they belong to."
-        className="relative aspect-[880/540] w-full touch-pan-y select-none"
-        onPointerMove={move}
-        onPointerLeave={() => {
-          point.current.on = false;
-        }}
+        ref={room}
+        className="flex min-h-0 min-w-0 items-center justify-center wide:col-start-2 wide:row-span-full wide:row-start-1"
       >
         <div
-          ref={stage}
-          className="absolute top-0 left-0 origin-top-left transition-opacity duration-500"
-          style={{
-            width: W,
-            height: H,
-            transform: `scale(${scale})`,
-            opacity: scale ? 1 : 0,
+          ref={outer}
+          role="img"
+          aria-label="Ten loose files fly into three folders, one for each Linear issue they belong to."
+          className="relative shrink-0 touch-pan-y select-none"
+          style={{ width: W * scale, height: H * scale }}
+          onPointerMove={move}
+          onPointerLeave={() => {
+            point.current.on = false;
           }}
         >
-          <div className="absolute inset-x-16 bottom-0 h-40 rounded-[50%] bg-[radial-gradient(closest-side,rgb(130_153_255/0.08),transparent)]" />
+          <div
+            ref={stage}
+            className="absolute top-0 left-0 origin-top-left transition-opacity duration-500"
+            style={{
+              width: W,
+              height: H,
+              transform: `scale(${scale})`,
+              opacity: scale ? 1 : 0,
+            }}
+          >
+            <div className="absolute inset-x-16 bottom-0 h-40 rounded-[50%] bg-[radial-gradient(closest-side,rgb(130_153_255/0.08),transparent)]" />
 
-          {folders.map((f) => (
-            <div
-              key={f.id}
-              data-back
-              className="absolute top-0 left-0 h-[130px] w-[180px] origin-bottom rounded-[12px] bg-[#c9ba90]"
-              style={{ zIndex: 10, opacity: 0, transform: "scale(0)" }}
-            >
-              <div className="absolute -top-3.5 left-3 h-5 w-[76px] rounded-t-[8px] bg-[#c9ba90]" />
-            </div>
-          ))}
-
-          {folders.map((f) => (
-            <div
-              key={f.id}
-              data-front
-              className="absolute top-0 left-0 flex h-[100px] w-[186px] origin-bottom flex-col justify-end gap-0.5 rounded-[12px] p-3.5 text-manila-foreground"
-              style={{
-                zIndex: 20,
-                opacity: 0,
-                transform: "scale(0)",
-                background: "linear-gradient(180deg, #f3ebd4, #e4d8b5)",
-                boxShadow:
-                  "inset 0 1px 0 rgb(255 255 255 / 0.7), 0 14px 28px -10px rgb(0 0 0 / 0.7)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[14px] font-semibold tracking-tight">
-                  {f.id}
-                </span>
-                <span
-                  data-count
-                  className="rounded-full bg-manila-foreground/10 px-1.5 py-0.5 font-mono text-[10px]"
-                >
-                  0 files
-                </span>
-              </div>
-              <span className="truncate text-[12px] opacity-70">{f.title}</span>
-            </div>
-          ))}
-
-          {files.map((f, i) => (
-            <div
-              key={f.name}
-              data-file
-              className="absolute top-0 left-0 will-change-transform"
-              style={{
-                width: FW,
-                height: FH,
-                zIndex: 30 + i,
-                transform: place({ x: f.x, y: f.y, r: f.r, s: 1, z: 0, l: 0 }),
-                filter:
-                  "drop-shadow(0 calc(2px + var(--l, 0) * 16px) calc(3px + var(--l, 0) * 12px) rgb(0 0 0 / 0.45))",
-              }}
-            >
+            {folders.map((f) => (
               <div
-                className="relative size-full rounded-md bg-[#f6f5f0] p-2.5"
+                key={f.id}
+                data-back
+                className="absolute top-0 left-0 h-[130px] w-[180px] origin-bottom rounded-[12px] bg-[#c9ba90]"
+                style={{ zIndex: 10, opacity: 0, transform: "scale(0)" }}
+              >
+                <div className="absolute -top-3.5 left-3 h-5 w-[76px] rounded-t-[8px] bg-[#c9ba90]" />
+              </div>
+            ))}
+
+            {folders.map((f) => (
+              <div
+                key={f.id}
+                data-front
+                className="absolute top-0 left-0 flex h-[100px] w-[186px] origin-bottom flex-col justify-end gap-0.5 rounded-[12px] p-3.5 text-manila-foreground"
                 style={{
-                  clipPath:
-                    "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)",
+                  zIndex: 20,
+                  opacity: 0,
+                  transform: "scale(0)",
+                  background: "linear-gradient(180deg, #f3ebd4, #e4d8b5)",
+                  boxShadow:
+                    "inset 0 1px 0 rgb(255 255 255 / 0.7), 0 14px 28px -10px rgb(0 0 0 / 0.7)",
                 }}
               >
-                <span
-                  className="inline-block rounded-[4px] px-1 py-px font-mono text-[9px] font-semibold text-[#141413] uppercase"
-                  style={{ background: f.tint }}
-                >
-                  {f.ext}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[14px] font-semibold tracking-tight">
+                    {f.id}
+                  </span>
+                  <span
+                    data-count
+                    className="rounded-full bg-manila-foreground/10 px-1.5 py-0.5 font-mono text-[10px]"
+                  >
+                    0 files
+                  </span>
+                </div>
+                <span className="truncate text-[12px] opacity-70">
+                  {f.title}
                 </span>
-                {f.ext === "png" ? (
+              </div>
+            ))}
+
+            {files.map((f, i) => (
+              <div
+                key={f.name}
+                data-file
+                className="absolute top-0 left-0 will-change-transform"
+                style={{
+                  width: FW,
+                  height: FH,
+                  zIndex: 30 + i,
+                  transform: place({
+                    x: f.x,
+                    y: f.y,
+                    r: f.r,
+                    s: 1,
+                    z: 0,
+                    l: 0,
+                  }),
+                  filter:
+                    "drop-shadow(0 calc(2px + var(--l, 0) * 16px) calc(3px + var(--l, 0) * 12px) rgb(0 0 0 / 0.45))",
+                }}
+              >
+                <div
+                  className="relative size-full rounded-md bg-[#f6f5f0] p-2.5"
+                  style={{
+                    clipPath:
+                      "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)",
+                  }}
+                >
+                  <span
+                    className="inline-block rounded-[4px] px-1 py-px font-mono text-[9px] font-semibold text-[#141413] uppercase"
+                    style={{ background: f.tint }}
+                  >
+                    {f.ext}
+                  </span>
+                  {f.ext === "png" ? (
+                    <div
+                      className="mt-2 h-11 rounded-[3px]"
+                      style={{
+                        background: `radial-gradient(circle at 72% 32%, #f6f5f0 0 4px, transparent 5px), linear-gradient(160deg, ${f.tint}, #8299ff)`,
+                      }}
+                    />
+                  ) : (
+                    <div className="mt-2.5 flex flex-col gap-1.5">
+                      {f.bars.map((w, b) => (
+                        <div
+                          key={b}
+                          className="h-1 rounded-full bg-[#141413]/15"
+                          style={{ width: `${w}%` }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <p className="absolute inset-x-2.5 bottom-2 truncate font-mono text-[10px] text-[#141413]/70">
+                    {f.name}
+                  </p>
                   <div
-                    className="mt-2 h-11 rounded-[3px]"
+                    className="absolute top-0 right-0 size-[18px] rounded-bl-[4px]"
                     style={{
-                      background: `radial-gradient(circle at 72% 32%, #f6f5f0 0 4px, transparent 5px), linear-gradient(160deg, ${f.tint}, #8299ff)`,
+                      background:
+                        "linear-gradient(225deg, transparent 50%, #d6d2c4 50%)",
                     }}
                   />
-                ) : (
-                  <div className="mt-2.5 flex flex-col gap-1.5">
-                    {f.bars.map((w, b) => (
-                      <div
-                        key={b}
-                        className="h-1 rounded-full bg-[#141413]/15"
-                        style={{ width: `${w}%` }}
-                      />
-                    ))}
-                  </div>
-                )}
-                <p className="absolute inset-x-2.5 bottom-2 truncate font-mono text-[10px] text-[#141413]/70">
-                  {f.name}
-                </p>
-                <div
-                  className="absolute top-0 right-0 size-[18px] rounded-bl-[4px]"
-                  style={{
-                    background:
-                      "linear-gradient(225deg, transparent 50%, #d6d2c4 50%)",
-                  }}
-                />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {sparks.map((s, d) => (
-            <div
-              key={d}
-              data-dot
-              className="absolute top-0 left-0 size-1.5 rounded-full"
-              style={{ zIndex: 70, opacity: 0, background: s.c }}
-            />
-          ))}
+            {sparks.map((s, d) => (
+              <div
+                key={d}
+                data-dot
+                className="absolute top-0 left-0 size-1.5 rounded-full"
+                style={{ zIndex: 70, opacity: 0, background: s.c }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex w-full max-w-md flex-col gap-3">
-        <div className="flex items-center justify-center gap-2">
-          <Button size="lg" className="h-10 px-4" disabled={busy} onClick={go}>
-            {phase === "sorted" || phase === "reset" ? (
-              <Shuffle />
-            ) : (
-              <WandSparkles />
-            )}
-            {phase === "mess" && "Let the agent file it"}
-            {phase === "sort" && "Filing…"}
-            {phase === "sorted" && "Make a mess"}
-            {phase === "reset" && "Making a mess…"}
-          </Button>
-          <Button
-            size="icon-lg"
-            variant="ghost"
-            className="size-10 text-muted-foreground"
-            aria-label={muted ? "Turn sound on" : "Turn sound off"}
-            onClick={toggle}
-          >
-            {muted ? <VolumeX /> : <Volume2 />}
-          </Button>
-        </div>
-        <div
-          aria-live="polite"
-          className="flex h-[6.5rem] flex-col justify-end gap-1 overflow-hidden rounded-xl border bg-terminal px-4 py-3 font-mono text-xs"
+      <div className="flex min-w-0 items-center gap-2 wide:col-start-1 wide:row-start-3">
+        <Button size="lg" className="h-10 px-4" disabled={busy} onClick={go}>
+          {phase === "sorted" || phase === "reset" ? (
+            <Shuffle />
+          ) : (
+            <WandSparkles />
+          )}
+          {phase === "mess" && "Let the agent file it"}
+          {phase === "sort" && "Filing…"}
+          {phase === "sorted" && "Make a mess"}
+          {phase === "reset" && "Making a mess…"}
+        </Button>
+        <Button
+          size="icon-lg"
+          variant="ghost"
+          className="size-10 text-muted-foreground"
+          aria-label={muted ? "Turn sound on" : "Turn sound off"}
+          onClick={toggle}
         >
-          {log.map((line) => (
-            <p
-              key={line.text}
-              className={
-                line.tone === "ok"
-                  ? "animate-in text-success fade-in slide-in-from-bottom-1"
-                  : line.tone === "dim"
-                    ? "animate-in text-muted-foreground fade-in"
-                    : "animate-in truncate fade-in slide-in-from-bottom-1"
-              }
-            >
-              {line.tone === "cmd" && (
-                <span className="text-muted-foreground">$ </span>
-              )}
-              {line.text}
-            </p>
-          ))}
-        </div>
+          {muted ? <VolumeX /> : <Volume2 />}
+        </Button>
       </div>
     </div>
   );
