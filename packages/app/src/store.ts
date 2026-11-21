@@ -111,6 +111,28 @@ export const layer = (root: string) =>
         return dir;
       });
 
+      // The issue directory is only created once the file is ready, so a failure leaves no empty issue.
+      const publish = <E>(
+        issue: Issue,
+        name: string,
+        write: (file: string) => Effect.Effect<void, E>,
+      ) =>
+        Effect.scoped(
+          Effect.gen(function* () {
+            yield* fs.makeDirectory(home, { recursive: true });
+            const stage = yield* fs.makeTempDirectoryScoped({
+              directory: yield* fs.realPath(home),
+              prefix: ".doket-",
+            });
+            const copy = path.join(stage, name);
+            yield* write(copy);
+            const file = path.join(yield* directory(issue, true), name);
+            // A hard link publishes the complete copy and fails if the name is taken.
+            yield* fs.link(copy, file).pipe(failure(file));
+            return file;
+          }),
+        );
+
       const issues = Effect.fn("Store.issues")(function* () {
         const names = yield* fs.readDirectory(home).pipe(failure(home));
         return (yield* Effect.forEach(
@@ -158,29 +180,14 @@ export const layer = (root: string) =>
               message: `Expected a file: ${source}`,
             });
           }
-          const dir = yield* directory(input.issue, true);
-          const file = path.join(dir, name);
-          return yield* Effect.scoped(
-            Effect.gen(function* () {
-              const stage = yield* fs.makeTempDirectoryScoped({
-                directory: path.dirname(dir),
-                prefix: ".doket-",
-              });
-              const copy = path.join(stage, name);
-              yield* fs.copyFile(source, copy);
-              // A hard link publishes the complete copy and fails if the name is taken.
-              yield* fs.link(copy, file).pipe(failure(file));
-              return file;
-            }),
+          return yield* publish(input.issue, name, (copy) =>
+            fs.copyFile(source, copy),
           );
         }),
         create: Effect.fn("Store.create")(function* (input) {
-          const dir = yield* directory(input.issue, true);
-          const file = path.join(dir, input.name);
-          yield* fs
-            .writeFileString(file, "", { flag: "wx" })
-            .pipe(failure(file));
-          return file;
+          return yield* publish(input.issue, input.name, (copy) =>
+            fs.writeFileString(copy, ""),
+          );
         }),
         // Matches the paths of issues and files, and still answers before the store exists.
         home: () =>
