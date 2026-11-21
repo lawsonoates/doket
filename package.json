@@ -10,6 +10,7 @@
     "check": "bun fmt --check && bun lint",
     "deploy": "alchemy deploy",
     "fix": "bun lint --fix && bun fmt",
+    "test": "bun turbo run test",
     "typecheck": "bun turbo run typecheck"
   },
   "devDependencies": {

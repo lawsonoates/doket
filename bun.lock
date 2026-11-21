@@ -22,6 +22,10 @@
     },
     "packages/app": {
       "name": "@doket/app",
+      "version": "0.0.1",
+      "bin": {
+        "doket": "./src/main.ts",
+      },
       "dependencies": {
         "@effect/platform-bun": "4.0.5",
         "effect": "4.0.5",
