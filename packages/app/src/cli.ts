@@ -1,6 +1,5 @@
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
-import { Query, Search } from "./search.ts";
 import { Issue, Name, Service as Store } from "./store.ts";
 
 const issue = Argument.String("issue").pipe(
@@ -69,57 +68,48 @@ const list = Command.make(
 
 const path = Command.make(
   "path",
-  { issue, name: name.pipe(Argument.optional) },
+  {
+    issue: issue.pipe(Argument.optional),
+    name: name.pipe(Argument.optional),
+  },
   (input) =>
     Effect.gen(function* () {
       const store = yield* Store;
       yield* Console.log(
-        yield* store.path({
-          issue: input.issue,
-          name: Option.getOrUndefined(input.name),
-        }),
+        Option.isSome(input.issue)
+          ? yield* store.path({
+              issue: input.issue.value,
+              name: Option.getOrUndefined(input.name),
+            })
+          : yield* store.home(),
       );
     }),
 ).pipe(
   Command.withDescription(
-    "Print the absolute path of an existing issue or file",
+    "Print the absolute path of the store, or of an existing issue or file",
   ),
-);
-
-const search = Command.make(
-  "search",
-  {
-    issue: Flag.String("issue").pipe(
-      Flag.map((value) => value.toUpperCase()),
-      Flag.withSchema(Issue),
-      Flag.optional,
-    ),
-    json,
-    query: Argument.String("query").pipe(
-      Argument.map((value) => value.trim()),
-      Argument.withSchema(Query),
-    ),
-  },
-  (input) =>
-    Effect.gen(function* () {
-      const engine = yield* Search;
-      yield* print(
-        yield* engine.search({
-          issue: Option.getOrUndefined(input.issue),
-          query: input.query,
-        }),
-        input.json,
-        (match) =>
-          match.kind === "name"
-            ? match.path
-            : `${match.path}:${match.line}: ${match.text}`,
-      );
-    }),
-).pipe(
-  Command.withDescription("Search fuzzy filenames and literal text with fff"),
 );
 
 export const command = Command.make("doket").pipe(
   Command.withDescription("Keep the files for each Linear issue together"),
-  Command.withSubcommands([create, add, list, path, search]),
+  Command.withSubcommands([create, add, list, path]),
+  Command.withExamples([
+    {
+      command: 'grep -rn "text" "$(doket path)"',
+      description: "Search the text of every file",
+    },
+    {
+      command: 'grep -rn "text" "$(doket path ENG-123)"',
+      description: "Search the text of one issue's files",
+    },
+    {
+      command: 'rg --hidden --no-ignore "text" "$(doket path)"',
+      description:
+        "Use ripgrep, which otherwise skips hidden and ignored files",
+    },
+    {
+      command: 'find "$(doket path)" -type f -iname "*report*"',
+      description: "Find files by name",
+    },
+  ]),
 );

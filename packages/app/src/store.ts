@@ -55,6 +55,7 @@ export interface Interface {
     issue: Issue;
     name: Name;
   }) => Effect.Effect<string, Error>;
+  readonly home: () => Effect.Effect<string, Error>;
   readonly issues: () => Effect.Effect<readonly Directory[], Error>;
   readonly list: (issue: Issue) => Effect.Effect<readonly Artifact[], Error>;
   readonly path: (input: {
@@ -181,6 +182,13 @@ export const layer = (root: string) =>
             .pipe(failure(file));
           return file;
         }),
+        // Matches the paths of issues and files, and still answers before the store exists.
+        home: () =>
+          fs.realPath(home).pipe(
+            Effect.catchReasons("PlatformError", {
+              NotFound: () => Effect.succeed(home),
+            }),
+          ),
         issues: () =>
           issues().pipe(Effect.catchTag("Missing", () => Effect.succeed([]))),
         list,

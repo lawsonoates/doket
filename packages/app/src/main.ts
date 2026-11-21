@@ -14,7 +14,6 @@ import {
 import { CliError, Command } from "effect/cli";
 import manifest from "../package.json";
 import { command } from "./cli.ts";
-import { layer as search } from "./search.ts";
 import { layer } from "./store.ts";
 
 const storage = Layer.unwrap(
@@ -23,7 +22,7 @@ const storage = Layer.unwrap(
     const root = yield* Config.String("ISSUE_HOME").pipe(
       Config.withDefault(path.join(homedir(), "Documents", "issue-files")),
     );
-    return search(root).pipe(Layer.provideMerge(layer(root)));
+    return layer(root);
   }),
 );
 
