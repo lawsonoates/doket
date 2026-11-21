@@ -212,6 +212,7 @@ function tally(mode: Mode, t: number) {
 
 // A soft synthesized pop, so the demo ships no audio files.
 function blip(ctx: AudioContext, step: number, down: boolean) {
+  if (ctx.state === "closed") return;
   const t = ctx.currentTime;
   const f = 523.25 * 2 ** (step / 12);
   const osc = ctx.createOscillator();
@@ -225,6 +226,32 @@ function blip(ctx: AudioContext, step: number, down: boolean) {
   osc.connect(gain).connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.22);
+}
+
+// Unlock Web Audio inside a tap gesture so iOS Safari plays even with the silent switch on.
+function prime(ref: { current: AudioContext | null }) {
+  const Ctx =
+    window.AudioContext ??
+    (window as Window & { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+  if (!Ctx) return;
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
+  if (nav.audioSession) {
+    try {
+      nav.audioSession.type = "playback";
+    } catch {
+      // Ignore unsupported or restricted audioSession changes.
+    }
+  }
+  const ctx =
+    !ref.current || ref.current.state === "closed"
+      ? (ref.current = new Ctx())
+      : ref.current;
+  if (ctx.state !== "running") void ctx.resume();
+  const src = ctx.createBufferSource();
+  src.buffer = ctx.createBuffer(1, 1, 22050);
+  src.connect(ctx.destination);
+  src.start(0);
 }
 
 const notes = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
@@ -380,8 +407,7 @@ export function Sorter({ children }: { children?: ReactNode }) {
     const mode = run.current.mode;
     if (mode === "sort" || mode === "reset") return;
     const next = mode === "mess" ? "sort" : "reset";
-    if (!quiet.current && typeof AudioContext !== "undefined")
-      audio.current ??= new AudioContext();
+    if (!quiet.current) prime(audio);
     const skip = matchMedia("(prefers-reduced-motion: reduce)").matches;
     run.current = {
       mode: next,
@@ -395,6 +421,7 @@ export function Sorter({ children }: { children?: ReactNode }) {
     quiet.current = next;
     setMuted(next);
     localStorage.setItem(key, next ? "1" : "0");
+    if (!next) prime(audio);
   };
 
   const move = (e: PointerEvent<HTMLDivElement>) => {
