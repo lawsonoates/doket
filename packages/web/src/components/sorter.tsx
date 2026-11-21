@@ -1,4 +1,4 @@
-import { Shuffle, Volume2, VolumeX, WandSparkles } from "lucide-react";
+import { FolderInput, Shuffle, Volume2, VolumeX } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -564,12 +564,12 @@ export function Sorter({ children }: { children?: ReactNode }) {
           {phase === "sorted" || phase === "reset" ? (
             <Shuffle />
           ) : (
-            <WandSparkles />
+            <FolderInput />
           )}
-          {phase === "mess" && "Let the agent file it"}
+          {phase === "mess" && "File by issue"}
           {phase === "sort" && "Filing…"}
-          {phase === "sorted" && "Make a mess"}
-          {phase === "reset" && "Making a mess…"}
+          {phase === "sorted" && "Scatter"}
+          {phase === "reset" && "Scattering…"}
         </Button>
         <Button
           size="icon-lg"

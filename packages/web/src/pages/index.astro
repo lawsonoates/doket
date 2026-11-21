@@ -23,12 +23,14 @@ import { buttonVariants } from "@/components/ui/button"
     <Sorter client:visible>
       <img src="/brand/doket-lockup.svg" alt="Doket" class="w-28 short:w-20" />
       <h1 class="mt-4 text-3xl text-balance wide:mt-6 wide:text-4xl wide:lg:text-5xl short:mt-2 short:text-2xl">
-        Every file, filed under its issue.
+        Folders for every Linear issue.
       </h1>
       <p class="mt-2 text-sm text-pretty text-muted-foreground wide:mt-4 wide:text-base short:mt-1 short:text-xs">
-        Logs, patches and screenshots pile up while you work. Doket lets your
-        agent file each one under the Linear issue it belongs to.
+        A small CLI that keeps notes, logs, patches, and screenshots out of your
+        repo and organized on disk by issue ID. Built for you and your coding
+        agents to write, list, and grep.
       </p>
+      <pre class="mt-4 inline-flex max-w-full items-center gap-2 overflow-x-auto rounded-lg border border-border bg-terminal px-3 py-2 text-xs text-foreground/90 wide:mt-5 wide:text-[13px] short:hidden"><code><span class="select-none text-muted-foreground">$</span> doket add <span class="text-manila">ENG-142</span> repro.log</code></pre>
     </Sorter>
   </main>
 </Layout>
