@@ -14,7 +14,7 @@
     "typecheck": "bun turbo run typecheck"
   },
   "devDependencies": {
-    "@alchemy.run/frontend-frameworks": "^2.0.0-beta.84",
+    "@alchemy.run/frontend-frameworks": "^2.0.0-beta.87",
     "@tsconfig/bun": "catalog:",
     "@types/bun": "catalog:",
     "bun": "1.4.4-canary.20261030.1",
@@ -32,10 +32,10 @@
     "typescript": "7.0.2"
   },
   "dependencies": {
-    "@alchemy.run/cloudflare": "^2.0.0-beta.84",
+    "@alchemy.run/cloudflare": "^2.0.0-beta.87",
     "@effect/platform-bun": "4.0.7",
     "@effect/platform-node": "4.0.7",
-    "alchemy": "^2.0.0-beta.84",
+    "alchemy": "^2.0.0-beta.87",
     "effect": "4.0.7"
   }
 }
