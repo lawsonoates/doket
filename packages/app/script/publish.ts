@@ -2,6 +2,8 @@
 // Publishes the platform packages from script/build.ts, then the doket package that
 // installs the matching one through optionalDependencies. Versions npm already has are
 // skipped, so a failed run can be repeated.
+// With --stage, versions are staged instead and go live only once approved with 2FA,
+// platform packages first: npm stage list, then npm stage approve <stage-id>.
 import { $ } from "bun";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -13,6 +15,7 @@ const dist = join(root, "dist");
 const { version } = manifest;
 // npm rejects the unscoped name doket as too similar to dot.
 const name = "@lawsonoates/doket";
+const stage = process.argv.includes("--stage");
 
 const published = async (name: string) =>
   (await $`npm view ${`${name}@${version}`} version`.quiet().nothrow())
@@ -24,12 +27,15 @@ const publish = async (dir: string, name: string) => {
     return;
   }
   // Inherit the terminal so npm can ask for a one-time password.
-  const child = Bun.spawn(["npm", "publish", "--access", "public"], {
+  const command = stage
+    ? ["npm", "stage", "publish", ".", "--access", "public"]
+    : ["npm", "publish", "--access", "public"];
+  const child = Bun.spawn(command, {
     cwd: dir,
     stdio: ["inherit", "inherit", "inherit"],
   });
   if ((await child.exited) !== 0) {
-    throw new Error(`npm publish failed for ${name}@${version}`);
+    throw new Error(`${command.join(" ")} failed for ${name}@${version}`);
   }
 };
 

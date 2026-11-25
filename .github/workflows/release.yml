@@ -50,9 +50,9 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" packages/app/dist/*.tar.gz --clobber
 
       # Trusted publishing authenticates through the id-token permission, with no token,
-      # and adds provenance. It needs npm 11.5.1 or later.
+      # and adds provenance. Staged versions go live only once approved with 2FA.
       - run: npm install -g npm@latest
 
-      - name: Publish to npm
-        run: bun run publish:npm
+      - name: Stage on npm
+        run: bun run publish:npm --stage
         working-directory: packages/app

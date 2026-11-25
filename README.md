@@ -33,4 +33,4 @@ bun link --global @doket/app
 git tag v0.0.2 && git push origin v0.0.2
 ```
 
-The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and `@lawsonoates/doket`, which installs the right one to npm. It publishes through npm trusted publishing, so each of those five packages names this repository and `release.yml` as a trusted publisher on npmjs.com.
+The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and `@lawsonoates/doket`, which installs the right one to npm. It stages them through npm trusted publishing, so each of those five packages names this repository and `release.yml` as a trusted publisher on npmjs.com, with `npm publish` left disallowed. Nothing goes live until you approve the staged versions with 2FA, platform packages first: `npm stage list`, then `npm stage approve <stage-id>`, or approve them on npmjs.com.
