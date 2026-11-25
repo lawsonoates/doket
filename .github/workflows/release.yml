@@ -50,7 +50,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" packages/app/dist/*.tar.gz --clobber
 
       # Trusted publishing authenticates through the id-token permission, with no token,
-      # and adds provenance. npm stage needs npm 12. Staged versions go live only once approved with 2FA.
+      # and adds provenance. This npm release has npm stage. Staged versions go live only once approved with 2FA.
       - run: npm install -g npm@12.2.3
 
       - name: Stage on npm
