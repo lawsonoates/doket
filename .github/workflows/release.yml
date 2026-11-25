@@ -49,9 +49,10 @@ jobs:
             gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
           gh release upload "$GITHUB_REF_NAME" packages/app/dist/*.tar.gz --clobber
 
+      # Trusted publishing authenticates through the id-token permission, with no token,
+      # and adds provenance. It needs npm 11.5.1 or later.
+      - run: npm install -g npm@latest
+
       - name: Publish to npm
         run: bun run publish:npm
         working-directory: packages/app
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"

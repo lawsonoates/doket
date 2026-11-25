@@ -33,4 +33,4 @@ bun link --global @doket/app
 git tag v0.0.2 && git push origin v0.0.2
 ```
 
-The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and `@lawsonoates/doket`, which installs the right one to npm. It needs an `NPM_TOKEN` repository secret.
+The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and `@lawsonoates/doket`, which installs the right one to npm. It publishes through npm trusted publishing, so each of those five packages names this repository and `release.yml` as a trusted publisher on npmjs.com.
