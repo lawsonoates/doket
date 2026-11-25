@@ -21,7 +21,14 @@ const publish = async (dir: string, name: string) => {
     console.log(`already published ${name}@${version}`);
     return;
   }
-  await $`npm publish --access public`.cwd(dir);
+  // Inherit the terminal so npm can ask for a one-time password.
+  const child = Bun.spawn(["npm", "publish", "--access", "public"], {
+    cwd: dir,
+    stdio: ["inherit", "inherit", "inherit"],
+  });
+  if ((await child.exited) !== 0) {
+    throw new Error(`npm publish failed for ${name}@${version}`);
+  }
 };
 
 for (const target of targets) {
