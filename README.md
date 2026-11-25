@@ -5,7 +5,7 @@ Install on Linux or macOS (x64 or arm64):
 ```bash
 curl -fsSL https://doket.dev/install | bash
 # or
-npm install -g doket
+npm install -g @lawsonoates/doket
 ```
 
 ## Development
@@ -33,4 +33,4 @@ bun link --global @doket/app
 git tag v0.0.2 && git push origin v0.0.2
 ```
 
-The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and the `doket` package that installs the right one to npm. It needs an `NPM_TOKEN` repository secret.
+The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and `@lawsonoates/doket`, which installs the right one to npm. It needs an `NPM_TOKEN` repository secret.

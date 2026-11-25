@@ -11,6 +11,8 @@ import { packageName, targets } from "./targets.ts";
 const root = resolve(import.meta.dirname, "..");
 const dist = join(root, "dist");
 const { version } = manifest;
+// npm rejects the unscoped name doket as too similar to dot.
+const name = "@lawsonoates/doket";
 
 const published = async (name: string) =>
   (await $`npm view ${`${name}@${version}`} version`.quiet().nothrow())
@@ -57,7 +59,7 @@ await Bun.write(
   join(wrapper, "package.json"),
   `${JSON.stringify(
     {
-      name: "doket",
+      name,
       version,
       license: manifest.license,
       description: manifest.description,
@@ -74,4 +76,4 @@ await Bun.write(
     2,
   )}\n`,
 );
-await publish(wrapper, "doket");
+await publish(wrapper, name);
