@@ -1,5 +1,15 @@
 # doket
 
+Install on Linux or macOS (x64 or arm64):
+
+```bash
+curl -fsSL https://doket.dev/install | bash
+# or
+npm install -g doket
+```
+
+## Development
+
 ```bash
 bun install
 bun run check
@@ -14,3 +24,13 @@ cd packages/app
 bun link
 bun link --global @doket/app
 ```
+
+## Releasing
+
+`bun run build` in `packages/app` compiles a standalone binary for each of linux and darwin on x64 and arm64 into `dist/` (`--single` builds only the current platform). To release, bump `version` in `packages/app/package.json`, commit, then push a matching tag:
+
+```bash
+git tag v0.0.2 && git push origin v0.0.2
+```
+
+The `release` workflow checks and tests the repo, uploads the binaries to a GitHub release (which `doket.dev/install` downloads), then publishes `doket-<os>-<arch>` and the `doket` package that installs the right one to npm. It needs an `NPM_TOKEN` repository secret.

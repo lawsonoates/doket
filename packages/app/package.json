@@ -3,13 +3,23 @@
   "name": "@doket/app",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
+  "description": "Keep the files for each Linear issue together",
+  "homepage": "https://doket.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lawsonoates/doket.git",
+    "directory": "packages/app"
+  },
   "type": "module",
   "bin": {
     "doket": "./src/main.ts"
   },
   "scripts": {
     "test": "bun test",
-    "typecheck": "bun check"
+    "typecheck": "bun check",
+    "build": "bun script/build.ts",
+    "publish:npm": "bun script/publish.ts"
   },
   "dependencies": {
     "@effect/platform-bun": "4.1.5",

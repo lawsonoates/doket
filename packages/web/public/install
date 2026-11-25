@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Installs the doket binary from GitHub Releases.
+#   curl -fsSL https://doket.dev/install | bash
+#   curl -fsSL https://doket.dev/install | VERSION=0.0.1 bash
+# DOKET_INSTALL sets the directory, which defaults to ~/.local/bin.
+set -euo pipefail
+
+repo="lawsonoates/doket"
+dir="${DOKET_INSTALL:-$HOME/.local/bin}"
+
+case "$(uname -s)" in
+  Linux) os=linux ;;
+  Darwin) os=darwin ;;
+  *) echo "doket supports Linux and macOS, not $(uname -s)" >&2; exit 1 ;;
+esac
+case "$(uname -m)" in
+  x86_64 | amd64) arch=x64 ;;
+  arm64 | aarch64) arch=arm64 ;;
+  *) echo "doket supports x64 and arm64, not $(uname -m)" >&2; exit 1 ;;
+esac
+# A shell under Rosetta reports x86_64 on Apple Silicon. Prefer the native binary.
+if [ "$os" = darwin ] && [ "$arch" = x64 ] &&
+  [ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" = 1 ]; then
+  arch=arm64
+fi
+
+asset="doket-$os-$arch.tar.gz"
+if [ -n "${VERSION:-}" ]; then
+  url="https://github.com/$repo/releases/download/v${VERSION#v}/$asset"
+else
+  url="https://github.com/$repo/releases/latest/download/$asset"
+fi
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+echo "Downloading $url"
+curl -fL --progress-bar "$url" -o "$tmp/$asset"
+tar -xzf "$tmp/$asset" -C "$tmp"
+mkdir -p "$dir"
+install -m 755 "$tmp/doket" "$dir/doket"
+echo "Installed $("$dir/doket" --version) to $dir/doket"
+
+case ":$PATH:" in
+  *":$dir:"*) ;;
+  *) echo "Add $dir to your PATH: export PATH=\"$dir:\$PATH\"" ;;
+esac
